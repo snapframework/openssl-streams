@@ -2,7 +2,7 @@ Name:                openssl-streams
 Version:             1.0
 License:             BSD3
 License-file:        LICENSE
-Category:            Data
+Category:            IO-Streams
 Build-type:          Simple
 Cabal-version:       >= 1.10
 Synopsis:            OpenSSL network support for io-streams.
