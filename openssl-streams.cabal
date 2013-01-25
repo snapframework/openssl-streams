@@ -2,10 +2,11 @@ Name:                openssl-streams
 Version:             1.0
 License:             BSD3
 License-file:        LICENSE
-Category:            IO-Streams
+Category:            Network, IO-Streams
 Build-type:          Simple
 Cabal-version:       >= 1.10
 Synopsis:            OpenSSL network support for io-streams.
+Maintainer:          Gregory Collins <greg@gregorycollins.net>
 Description:
   The openssl-streams library contains io-streams routines for secure
   networking using OpenSSL (by way of HsOpenSSL).
@@ -19,7 +20,7 @@ Library
   hs-source-dirs:    src
   Default-language:  Haskell2010
 
-  ghc-options:       -O2 -Wall -fwarn-tabs -funbox-strict-fields -threaded
+  ghc-options:       -O2 -Wall -fwarn-tabs -funbox-strict-fields
                      -fno-warn-unused-do-bind
 
   ghc-prof-options:  -prof -auto-all
@@ -56,3 +57,7 @@ Test-suite testsuite
                      test-framework-hunit >= 0.2.7  && <0.3
 
   other-extensions:  OverloadedStrings
+
+source-repository head
+  type:     git
+  location: git://github.com/snapframework/openssl-streams.git
