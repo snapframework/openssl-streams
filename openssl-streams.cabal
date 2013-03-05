@@ -1,5 +1,5 @@
 Name:                openssl-streams
-Version:             1.0
+Version:             1.0.0.0
 License:             BSD3
 License-file:        LICENSE
 Category:            Network, IO-Streams
