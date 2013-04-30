@@ -1,5 +1,5 @@
 Name:                openssl-streams
-Version:             1.0.0.1
+Version:             1.1.0.0
 License:             BSD3
 License-file:        LICENSE
 Category:            Network, IO-Streams
@@ -10,6 +10,10 @@ Maintainer:          Gregory Collins <greg@gregorycollins.net>
 Description:
   The openssl-streams library contains io-streams routines for secure
   networking using OpenSSL (by way of HsOpenSSL).
+  .
+  /ChangeLog/
+  .
+    [@1.1.0.0@] Updated @openssl-streams@ to work with @io-streams@ 1.1.0.0.
 
 Extra-Source-Files:  CONTRIBUTORS,
                      test/cert.pem,
