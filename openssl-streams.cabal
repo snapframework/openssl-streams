@@ -1,5 +1,5 @@
 Name:                openssl-streams
-Version:             1.1.0.0
+Version:             1.1.0.1
 License:             BSD3
 License-file:        LICENSE
 Category:            Network, IO-Streams
@@ -12,6 +12,7 @@ Description:
   networking using OpenSSL (by way of HsOpenSSL).
   .
   /ChangeLog/
+    [@1.1.0.1@] Widened @network@ dependency to include 2.5.
   .
     [@1.1.0.0@] Updated @openssl-streams@ to work with @io-streams@ 1.1.0.0.
 
@@ -35,7 +36,7 @@ Library
                      bytestring    >= 0.9.2  && <0.11,
                      HsOpenSSL     >= 0.10.3 && <0.11,
                      io-streams    >= 1.0    && <1.2,
-                     network       >= 2.4    && <2.5
+                     network       >= 2.4    && <2.6
 
 
 ------------------------------------------------------------------------------
@@ -54,7 +55,7 @@ Test-suite testsuite
                      bytestring           >= 0.9.2  && <0.11,
                      HsOpenSSL            >= 0.10.3 && <0.11,
                      io-streams           >= 1.0    && <1.2,
-                     network              >= 2.3    && <2.5,
+                     network              >= 2.3    && <2.6,
                      -- test deps follow.
                      HUnit                >= 1.2    && <2,
                      test-framework       >= 0.6    && <0.7,
