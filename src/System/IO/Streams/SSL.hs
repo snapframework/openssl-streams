@@ -99,5 +99,6 @@ connect ctx host port = do
 
   where
     hints = N.defaultHints {
-              N.addrFlags = [N.AI_ADDRCONFIG, N.AI_NUMERICSERV]
+              N.addrFlags      = [N.AI_ADDRCONFIG, N.AI_NUMERICSERV]
+            , N.addrSocketType = N.Stream
             }

@@ -58,9 +58,15 @@ sanityCheck = testCase "sanitycheck" $ N.withSocketsDo $
         maybe (return ()) N.sClose $ SSL.sslSocket ssl
 
     server ctx mvar = do
+        let hint = N.defaultHints {
+                        N.addrFamily     = N.AF_INET,
+                        N.addrSocketType = N.Stream,
+                        N.addrFlags      = [N.AI_NUMERICHOST]
+                      }
+        xs <- N.getAddrInfo (Just hint) (Just "127.0.0.1") Nothing
+        let [addr] = xs
         sock  <- N.socket N.AF_INET N.Stream N.defaultProtocol
-        addr  <- N.inet_addr "127.0.0.1"
-        let saddr = N.SockAddrInet N.aNY_PORT addr
+        let saddr = N.addrAddress addr
         N.bind sock saddr
         N.listen sock 5
         port  <- N.socketPort sock
