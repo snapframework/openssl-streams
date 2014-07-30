@@ -17,30 +17,20 @@ import           Test.HUnit                     hiding (Test)
 
 
 main :: IO ()
-main = defaultMain [sanityCheck]
+main = N.withSocketsDo
+         $ SSL.withOpenSSL
+         $ defaultMain [sanityCheck, withConnection]
 
 
 ------------------------------------------------------------------------------
 sanityCheck :: Test
-sanityCheck = testCase "sanitycheck" $ N.withSocketsDo $
-              SSL.withOpenSSL $ do
+sanityCheck = testCase "sanitycheck" $ do
     ctx1 <- setupContext
     ctx2 <- setupContext
     x <- timeout (10 * 10^(6::Int)) $ go ctx1 ctx2
     assertEqual "ok" (Just ()) x
 
   where
-    setupContext = do
-        ctx <- SSL.context
-        SSL.contextSetDefaultCiphers ctx
-        SSL.contextSetCertificateFile ctx "test/cert.pem"
-        SSL.contextSetPrivateKeyFile ctx "test/key.pem"
-        SSL.contextSetVerificationMode ctx SSL.VerifyNone
-
-        certOK <- SSL.contextCheckPrivateKey ctx
-        assertBool "private key is bad" certOK
-        return ctx
-
     go ctx1 ctx2 = do
         portMVar   <- newEmptyMVar
         resultMVar <- newEmptyMVar
@@ -57,25 +47,66 @@ sanityCheck = testCase "sanitycheck" $ N.withSocketsDo $
         Streams.toList is >>= putMVar resultMVar
         maybe (return ()) N.sClose $ SSL.sslSocket ssl
 
-    server ctx mvar = do
-        let hint = N.defaultHints {
-                        N.addrFamily     = N.AF_INET,
-                        N.addrSocketType = N.Stream,
-                        N.addrFlags      = [N.AI_NUMERICHOST]
-                      }
-        xs <- N.getAddrInfo (Just hint) (Just "127.0.0.1") Nothing
-        let [addr] = xs
-        sock  <- N.socket N.AF_INET N.Stream N.defaultProtocol
-        let saddr = N.addrAddress addr
-        N.bind sock saddr
-        N.listen sock 5
-        port  <- N.socketPort sock
-        putMVar mvar port
-        (csock, _) <- N.accept sock
-        ssl <- SSL.connection ctx csock
-        SSL.accept ssl
-        (is, os) <- SSLStreams.sslToStreams ssl
-        Streams.toList is >>= flip Streams.writeList os
-        SSL.shutdown ssl SSL.Unidirectional
-        maybe (return ()) N.close $ SSL.sslSocket ssl
-        N.close sock
+
+------------------------------------------------------------------------------
+withConnection :: Test
+withConnection = testCase "withConnection" $ do
+    ctx1 <- setupContext
+    ctx2 <- setupContext
+    x <- timeout (10 * 10^(6::Int)) $ go ctx1 ctx2
+    assertEqual "ok" (Just ()) x
+
+  where
+    go ctx1 ctx2 = do
+        portMVar   <- newEmptyMVar
+        resultMVar <- newEmptyMVar
+        forkIO $ client ctx1 portMVar resultMVar
+        server ctx2 portMVar
+        l <- takeMVar resultMVar
+        assertEqual "testSocket" l ["ok"]
+
+    client ctx mvar resultMVar = do
+        port <- takeMVar mvar
+        SSLStreams.withConnection ctx "127.0.0.1" port $ \is os ssl -> do
+            Streams.fromList ["ok"] >>= Streams.connectTo os
+            SSL.shutdown ssl SSL.Unidirectional
+            Streams.toList is >>= putMVar resultMVar
+            maybe (return ()) N.sClose $ SSL.sslSocket ssl
+
+------------------------------------------------------------------------------
+server :: SSL.SSLContext -> MVar N.PortNumber -> IO ()
+server ctx mvar = do
+    let hint = N.defaultHints {
+                    N.addrFamily     = N.AF_INET,
+                    N.addrSocketType = N.Stream,
+                    N.addrFlags      = [N.AI_NUMERICHOST]
+                  }
+    xs <- N.getAddrInfo (Just hint) (Just "127.0.0.1") Nothing
+    let [addr] = xs
+    sock  <- N.socket N.AF_INET N.Stream N.defaultProtocol
+    let saddr = N.addrAddress addr
+    N.bind sock saddr
+    N.listen sock 5
+    port  <- N.socketPort sock
+    putMVar mvar port
+    (csock, _) <- N.accept sock
+    ssl <- SSL.connection ctx csock
+    SSL.accept ssl
+    (is, os) <- SSLStreams.sslToStreams ssl
+    Streams.toList is >>= flip Streams.writeList os
+    SSL.shutdown ssl SSL.Unidirectional
+    maybe (return ()) N.close $ SSL.sslSocket ssl
+    N.close sock
+
+
+setupContext :: IO SSL.SSLContext
+setupContext = do
+    ctx <- SSL.context
+    SSL.contextSetDefaultCiphers ctx
+    SSL.contextSetCertificateFile ctx "test/cert.pem"
+    SSL.contextSetPrivateKeyFile ctx "test/key.pem"
+    SSL.contextSetVerificationMode ctx SSL.VerifyNone
+
+    certOK <- SSL.contextCheckPrivateKey ctx
+    assertBool "private key is bad" certOK
+    return ctx

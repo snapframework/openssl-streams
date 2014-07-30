@@ -1,3 +1,5 @@
+{-# LANGUAGE ScopedTypeVariables #-}
+
 -- | This module provides convenience functions for interfacing @io-streams@
 -- with @HsOpenSSL@. It is intended to be imported @qualified@, e.g.:
 --
@@ -24,9 +26,12 @@
 
 module System.IO.Streams.SSL
   ( connect
+  , withConnection
   , sslToStreams
   ) where
 
+import qualified Control.Exception     as E
+import           Control.Monad         (void)
 import           Data.ByteString.Char8 (ByteString)
 import qualified Data.ByteString.Char8 as S
 import           Network.Socket        (HostName, PortNumber)
@@ -90,15 +95,65 @@ connect ctx host port = do
     let protocol   = N.addrProtocol addrInfo
     let address    = N.addrAddress addrInfo
 
-    sock <- N.socket family socketType protocol
-    N.connect sock address
-    ssl <- SSL.connection ctx sock
-    SSL.connect ssl
-    (is, os) <- sslToStreams ssl
-    return $! (is, os, ssl)
+    E.bracketOnError (N.socket family socketType protocol)
+                     N.close
+                     (\sock -> do N.connect sock address
+                                  ssl <- SSL.connection ctx sock
+                                  SSL.connect ssl
+                                  (is, os) <- sslToStreams ssl
+                                  return $! (is, os, ssl)
+                     )
 
   where
     hints = N.defaultHints {
               N.addrFlags      = [N.AI_ADDRCONFIG, N.AI_NUMERICSERV]
             , N.addrSocketType = N.Stream
             }
+
+
+------------------------------------------------------------------------------
+-- | Convenience function for initiating an SSL connection to the given
+-- @('HostName', 'PortNumber')@ combination. The socket and SSL connection are
+-- closed and deleted after the user handler runs.
+--
+-- /Since: 1.2.0.0./
+withConnection ::
+     SSLContext           -- ^ SSL context. See the @HsOpenSSL@
+                          -- documentation for information on creating
+                          -- this.
+  -> HostName             -- ^ hostname to connect to
+  -> PortNumber           -- ^ port number to connect to
+  -> (InputStream ByteString -> OutputStream ByteString -> SSL -> IO a)
+          -- ^ Action to run with the new connection
+  -> IO a
+withConnection ctx host port action = do
+    (addrInfo:_) <- N.getAddrInfo (Just hints) (Just host) (Just $ show port)
+    E.bracket (connectTo addrInfo) cleanup go
+
+  where
+    go (is, os, ssl, _) = action is os ssl
+
+    connectTo addrInfo = do
+        let family     = N.addrFamily addrInfo
+        let socketType = N.addrSocketType addrInfo
+        let protocol   = N.addrProtocol addrInfo
+        let address    = N.addrAddress addrInfo
+        E.bracketOnError (N.socket family socketType protocol)
+                         N.close
+                         (\sock -> do N.connect sock address
+                                      ssl <- SSL.connection ctx sock
+                                      SSL.connect ssl
+                                      (is, os) <- sslToStreams ssl
+                                      return $! (is, os, ssl, sock))
+
+    cleanup (_, os, ssl, sock) = E.mask_ $ do
+        eatException $! Streams.write Nothing os
+        eatException $! SSL.shutdown ssl $! SSL.Unidirectional
+        eatException $! N.close sock
+
+    hints = N.defaultHints {
+              N.addrFlags      = [N.AI_ADDRCONFIG, N.AI_NUMERICSERV]
+            , N.addrSocketType = N.Stream
+            }
+
+    eatException m = void m `E.catch` (\(_::E.SomeException) -> return $! ())
