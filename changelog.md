@@ -1,5 +1,9 @@
 # openssl-streams changelog #
 
+## 1.2.1.0
+  - Bump upper bound of the `io-streams` dependency for the bytestring-builder
+    migration.
+
 ## 1.2.0.0
   - Added `withConnection`, a convenience function for initiating an SSL
     connection to a given `(host, port)` pair. The socket and SSL connection
