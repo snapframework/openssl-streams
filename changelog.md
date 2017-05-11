@@ -1,5 +1,8 @@
 # openssl-streams changelog #
 
+## 1.2.1.1
+  - Allow `io-streams` 1.4.
+
 ## 1.2.1.0
   - Bump upper bound of the `io-streams` dependency for the bytestring-builder
     migration.
