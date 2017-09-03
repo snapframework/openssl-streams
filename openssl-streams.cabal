@@ -1,5 +1,5 @@
 Name:                openssl-streams
-Version:             1.2.1.1
+Version:             1.2.1.2
 License:             BSD3
 License-file:        LICENSE
 Category:            Network, IO-Streams
@@ -31,7 +31,7 @@ Library
   Build-depends:     base          >= 4      && <5,
                      bytestring    >= 0.9.2  && <0.11,
                      HsOpenSSL     >= 0.10.3 && <0.12,
-                     io-streams    >= 1.0    && <1.5,
+                     io-streams    >= 1.0    && <1.6,
                      network       >= 2.4    && <2.7
 
 
@@ -43,7 +43,7 @@ Test-suite testsuite
   Default-language:  Haskell2010
   Other-modules:     System.IO.Streams.SSL
 
-  ghc-options:       -O2 -Wall -fhpc -fwarn-tabs -funbox-strict-fields -threaded
+  ghc-options:       -O2 -Wall -fwarn-tabs -funbox-strict-fields -threaded
                      -fno-warn-unused-do-bind
   ghc-prof-options:  -auto-all
 

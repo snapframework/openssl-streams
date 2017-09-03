@@ -1,5 +1,8 @@
 # openssl-streams changelog #
 
+## 1.2.1.2
+  - Allow `io-streams` 1.5.
+
 ## 1.2.1.1
   - Allow `io-streams` 1.4.
 
