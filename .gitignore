@@ -4,6 +4,7 @@ cabal.sandbox.config
 TAGS
 cabal-dev
 dist/
+dist-newstyle/
 tmp/
 *.tix
 .hpc
@@ -16,3 +17,4 @@ tmp/
 .DS_Store
 **/.DS_Store
 docs/templates/out
+.ghc.environment.*
