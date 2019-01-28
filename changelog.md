@@ -1,8 +1,12 @@
 # openssl-streams changelog #
 
+## 1.2.2.0
+
+  - Allow `network` 3.0.
+
 ## 1.2.1.3
   - Bugfix: test target didn't allow `io-streams` 1.5.
-  
+
 ## 1.2.1.2
   - Allow `io-streams` 1.5.
 

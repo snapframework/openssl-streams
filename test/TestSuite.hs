@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP               #-}
 {-# LANGUAGE OverloadedStrings #-}
 module Main where
 
@@ -21,6 +22,12 @@ main = N.withSocketsDo
          $ SSL.withOpenSSL
          $ defaultMain [sanityCheck, withConnection]
 
+sClose :: N.Socket -> IO ()
+#if MIN_VERSION_network(2,7,0)
+sClose = N.close
+#else
+sClose = N.sClose
+#endif
 
 ------------------------------------------------------------------------------
 sanityCheck :: Test
@@ -39,13 +46,14 @@ sanityCheck = testCase "sanitycheck" $ do
         l <- takeMVar resultMVar
         assertEqual "testSocket" l ["ok"]
 
+
     client ctx mvar resultMVar = do
         port <- takeMVar mvar
         (is, os, ssl) <- SSLStreams.connect ctx "127.0.0.1" port
         Streams.fromList ["ok"] >>= Streams.connectTo os
         SSL.shutdown ssl SSL.Unidirectional
         Streams.toList is >>= putMVar resultMVar
-        maybe (return ()) N.sClose $ SSL.sslSocket ssl
+        maybe (return ()) sClose $ SSL.sslSocket ssl
 
 
 ------------------------------------------------------------------------------
@@ -71,7 +79,7 @@ withConnection = testCase "withConnection" $ do
             Streams.fromList ["ok"] >>= Streams.connectTo os
             SSL.shutdown ssl SSL.Unidirectional
             Streams.toList is >>= putMVar resultMVar
-            maybe (return ()) N.sClose $ SSL.sslSocket ssl
+            maybe (return ()) sClose $ SSL.sslSocket ssl
 
 ------------------------------------------------------------------------------
 server :: SSL.SSLContext -> MVar N.PortNumber -> IO ()
