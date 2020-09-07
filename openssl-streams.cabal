@@ -21,10 +21,8 @@ Library
   hs-source-dirs:    src
   Default-language:  Haskell2010
 
-  ghc-options:       -O2 -Wall -fwarn-tabs -funbox-strict-fields
+  ghc-options:       -Wall -fwarn-tabs -funbox-strict-fields
                      -fno-warn-unused-do-bind
-
-  ghc-prof-options:  -auto-all
 
   Exposed-modules:   System.IO.Streams.SSL
 
@@ -43,7 +41,7 @@ Test-suite testsuite
   Default-language:  Haskell2010
   Other-modules:     System.IO.Streams.SSL
 
-  ghc-options:       -O2 -Wall -fwarn-tabs -funbox-strict-fields -threaded
+  ghc-options:       -Wall -fwarn-tabs -funbox-strict-fields -threaded
                      -fno-warn-unused-do-bind
   ghc-prof-options:  -auto-all
 
