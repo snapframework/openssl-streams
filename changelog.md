@@ -1,5 +1,9 @@
 # openssl-streams changelog #
 
+## 1.2.3.0
+
+  - Remove `AI_ADDRCONFIG` from default socket hints in `connect`.
+
 ## 1.2.2.0
 
   - Allow `network` 3.0.
