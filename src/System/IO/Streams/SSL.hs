@@ -106,7 +106,7 @@ connect ctx host port = do
 
   where
     hints = N.defaultHints {
-              N.addrFlags      = [N.AI_ADDRCONFIG, N.AI_NUMERICSERV]
+              N.addrFlags      = [N.AI_NUMERICSERV]
             , N.addrSocketType = N.Stream
             }
 
@@ -152,7 +152,7 @@ withConnection ctx host port action = do
         eatException $! N.close sock
 
     hints = N.defaultHints {
-              N.addrFlags      = [N.AI_ADDRCONFIG, N.AI_NUMERICSERV]
+              N.addrFlags      = [N.AI_NUMERICSERV]
             , N.addrSocketType = N.Stream
             }
 
