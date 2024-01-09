@@ -59,4 +59,4 @@ Test-suite testsuite
 
 source-repository head
   type:     git
-  location: git://github.com/snapframework/openssl-streams.git
+  location: https://github.com/snapframework/openssl-streams.git
